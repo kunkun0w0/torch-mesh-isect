@@ -943,11 +943,11 @@ void bvh_cuda_forward(at::Tensor triangles, at::Tensor *collision_tensor_ptr,
 
   // Construct the bvh tree
   AT_DISPATCH_FLOATING_TYPES(
-      triangles.type(), "bvh_tree_building", ([&] {
+      triangles.scalar_type(), "bvh_tree_building", ([&] {
         thrust::device_vector<BVHNode<scalar_t>> leaf_nodes(num_triangles);
         thrust::device_vector<BVHNode<scalar_t>> internal_nodes(num_triangles -
                                                                 1);
-        auto triangle_float_ptr = triangles.data<scalar_t>();
+        auto triangle_float_ptr = triangles.data_ptr<scalar_t>();
 
         for (int bidx = 0; bidx < batch_size; ++bidx) {
 
@@ -1091,7 +1091,7 @@ void bvh_cuda_forward(at::Tensor triangles, at::Tensor *collision_tensor_ptr,
 #if PRINT_TIMINGS == 1
             cudaEventRecord(start);
 #endif
-            long *dev_ptr = collision_tensor_ptr->data<long>();
+            long *dev_ptr = collision_tensor_ptr->data_ptr<long>();
             cudaMemcpy(dev_ptr + bidx * num_triangles * max_collisions * 2,
                        (long *)collisions.data().get(),
                        2 * collisions.size() * sizeof(long),
